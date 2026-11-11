@@ -43,13 +43,47 @@ Por ejemplo, si configuramos `WARNING`, se registrarán los mensajes `WARNING`, 
 
 ---
 
-## 3. Código inicial de la aplicación
+## 3. Preparación del entorno de trabajo
+
+En esta práctica utilizaremos un repositorio público de GitHub que contiene el código inicial de la aplicación.
+
+En lugar de trabajar directamente sobre el repositorio original, cada alumno creará su propia copia mediante un **fork**.
+
+Un *fork* permite crear una copia de un repositorio en nuestra cuenta de GitHub para trabajar de manera independiente.
+
+**Pasos**
+
+1. Accede al repositorio facilitado por el profesor.
+2. Pulsa **Fork → Create a new fork** y selecciona tu cuenta personal de GitHub.
+3. Clona tu fork en tu equipo utilizando `git clone`.
+4. Abre el proyecto en Visual Studio Code.
+5. Sigue las modificaciones que realizaremos durante la clase.
+
+**¿Cómo guardar nuestros cambios en GitHub?**
+
+Los cambios realizados en nuestro equipo pueden guardarse en el repositorio remoto mediante las operaciones habituales de Git:
+
+- `git add`: prepara los archivos modificados.
+- `git commit`: registra los cambios en el repositorio local.
+- `git push`: envía los commits a nuestro fork de GitHub.
+
+**¿Y si queremos contribuir al repositorio original?**
+
+Podemos crear una **pull request (PR)** desde nuestro fork.
+
+Una pull request es una propuesta para incorporar nuestros cambios a otro repositorio. Su propietario puede revisar las modificaciones, comentarlas, solicitar correcciones y, si lo considera oportuno, aceptarlas mediante una fusión (*merge*).
+
+En esta práctica no es necesario crear ninguna pull request. Nuestro trabajo se realizará en el fork personal y en el equipo local.
+
+---
+
+## 4. Código inicial de la aplicación
 
 En la carpeta `src` tenéis un módulo llamado `tienda.py` con una versión inicial.
 
 El programa contiene las funciones necesarias para gestionar el inventario, pero todavía tenemos que completar el bucle del menú y configurar el sistema de registros.
 
-### 3.1. Construcción del bucle principal
+**Construcción del bucle principal**
 
 Vamos a completar juntos la función `main()`.
 
@@ -68,7 +102,7 @@ Una vez completado, ejecuta el programa y prueba ventas, reposiciones, consultas
 
 ---
 
-## 4. Primera configuración: logging básico en la terminal
+## 5. Primera configuración: logging básico en la terminal
 
 Añade la siguiente configuración al comienzo de `main()`, antes de registrar cualquier mensaje:
 
@@ -87,7 +121,7 @@ python tienda.py
 
 Observa los mensajes que aparecen durante las operaciones.
 
-### 4.1. ¿Qué significa level?
+### 5.1. ¿Qué significa level?
 
 El parámetro `level` establece el nivel mínimo de los mensajes que se registrarán.
 
@@ -109,7 +143,7 @@ Permite registrar únicamente mensajes `WARNING`, `ERROR` y `CRITICAL`.
 
 Cambia el nivel y ejecuta nuevamente el programa para comprobar las diferencias.
 
-### 4.2. ¿Qué significa format?
+### 5.2. ¿Qué significa format?
 
 El parámetro `format` establece cómo se presenta cada mensaje.
 
@@ -136,7 +170,7 @@ Produce:
 WARNING - Quedan pocas unidades
 ```
 
-### 4.3. ¿Por qué se utiliza %(levelname)s?
+### 5.3. ¿Por qué se utiliza %(levelname)s?
 
 Esta sintaxis procede del formato tradicional de cadenas de Python.
 
@@ -168,7 +202,7 @@ format="%(levelname)s - %(message)s"
 
 No es necesario utilizar todos los campos disponibles, únicamente aquellos que nos interesen.
 
-### 4.4. Campos habituales de logging
+### 5.4. Campos habituales de logging
 
 | Campo | Información |
 |---|---|
@@ -190,7 +224,7 @@ format="%(asctime)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
 
 Ejecuta el programa y observa la información adicional que aparece en cada registro.
 
-### 4.5. ¿Dónde se muestran los mensajes?
+### 5.5. ¿Dónde se muestran los mensajes?
 
 Por defecto, `logging.basicConfig()` utiliza la **salida estándar de errores**, `sys.stderr`.
 
@@ -208,7 +242,7 @@ El archivo `salida.txt` contendrá los mensajes de `print()` y `errores.txt` con
 
 ---
 
-## 5. Segunda configuración: guardar los registros en un archivo
+## 6. Segunda configuración: guardar los registros en un archivo
 
 En una aplicación real puede resultar útil conservar los registros para consultarlos posteriormente.
 
@@ -230,7 +264,7 @@ Observa que los mensajes de logging ya no aparecen en la terminal, sino en el ar
 
 Los mensajes generados mediante `print()` continúan apareciendo en pantalla.
 
-### 5.1. Parámetros nuevos
+### 6.1. Parámetros nuevos
 
 **`filename`**
 
@@ -249,7 +283,7 @@ Establece la codificación utilizada para guardar el texto.
 
 En este caso utilizamos UTF-8.
 
-### 5.2. ¿Es lo mismo que redirigir la salida de errores?
+### 6.2. ¿Es lo mismo que redirigir la salida de errores?
 
 Anteriormente utilizamos:
 
@@ -271,7 +305,7 @@ Cambia `filemode="w"` por `filemode="a"` y ejecuta dos veces el programa para ob
 
 ---
 
-## 6. Tercera configuración: registrar en archivo y terminal
+## 7. Tercera configuración: registrar en archivo y terminal
 
 Ahora queremos conseguir lo siguiente:
 
@@ -284,7 +318,7 @@ Un handler es un objeto que se encarga de enviar los mensajes de logging a un de
 
 Cada handler puede tener su propio nivel y formato.
 
-### 6.1. Configuración con dos handlers
+### 7.1. Configuración con dos handlers
 
 Añade la importación de `sys` al comienzo del archivo:
 
@@ -320,7 +354,7 @@ logger.addHandler(archivo)
 logger.addHandler(consola)
 ```
 
-### 6.2. ¿Cómo funciona?
+### 7.2. ¿Cómo funciona?
 
 **Logger principal**
 
@@ -356,7 +390,7 @@ logger.addHandler(consola)
 
 Asociamos ambos destinos al logger principal.
 
-### 6.3. Comprobación
+### 7.3. Comprobación
 
 Ejecuta el programa y realiza distintas operaciones.
 
@@ -371,13 +405,13 @@ El programa seguirá mostrando los mensajes de `print()` en pantalla, independie
 
 ---
 
-## 7. assert y gestión de excepciones
+## 8. assert y gestión de excepciones
 
 En nuestro programa hemos utilizado tres mecanismos diferentes: `if`, `raise` y `assert`.
 
 También hemos utilizado `try-except` para capturar determinadas excepciones.
 
-### 7.1. Validación mediante if y raise
+### 8.1. Validación mediante if y raise
 
 En la función `vender()` encontramos:
 
@@ -392,7 +426,7 @@ Si no se cumple, se lanza una excepción `ValueError`.
 
 En `main()`, el bloque `try-except` captura esa excepción para evitar que la aplicación termine inesperadamente.
 
-### 7.2. Comprobación mediante assert
+### 8.2. Comprobación mediante assert
 
 También tenemos:
 
@@ -409,7 +443,7 @@ En este caso, estamos comprobando una condición interna del programa: después 
 
 Por tanto, una aserción fallida puede ayudarnos a detectar un error de programación durante el desarrollo.
 
-### 7.3. Provocar un error de programación
+### 8.3. Provocar un error de programación
 
 Para observar cómo funciona `assert`, vamos a introducir temporalmente un error.
 
@@ -441,7 +475,7 @@ Una vez realizada la comprobación, restaura la instrucción original:
 stock -= cantidad
 ```
 
-### 7.4. Diferencias entre los mecanismos utilizados
+### 8.4. Diferencias entre los mecanismos utilizados
 
 | Mecanismo | Finalidad |
 |---|---|
@@ -454,7 +488,7 @@ stock -= cantidad
 
 ---
 
-## 8. Conclusiones
+## 9. Conclusiones
 
 Durante esta práctica hemos trabajado con una aplicación realista y hemos observado cómo cambia su comportamiento al modificar la configuración de logging.
 
