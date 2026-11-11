@@ -51,6 +51,8 @@ En lugar de trabajar directamente sobre el repositorio original, cada alumno cre
 
 Un *fork* permite crear una copia de un repositorio en nuestra cuenta de GitHub para trabajar de manera independiente.
 
+![Flujo de Trabajo en GitHub con Fork](./assets/flujo-trabajo-github-fork.png)
+
 **Pasos**
 
 1. Accede al repositorio facilitado por el profesor.
