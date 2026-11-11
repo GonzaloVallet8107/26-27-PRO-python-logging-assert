@@ -1,1 +1,587 @@
-# 26-27-PRO-ejemplo-logging-assert
+# Práctica guiada — Logging, assert y gestión de excepciones en Python
+
+## 1. Introducción
+
+Vamos a desarrollar una pequeña aplicación de **gestión de stock de una tienda** que permita:
+
+- Registrar ventas de productos.
+- Reponer unidades del inventario.
+- Consultar el stock disponible.
+- Controlar operaciones incorrectas mediante excepciones.
+- Registrar información sobre el funcionamiento del programa utilizando `logging`.
+- Comprobar condiciones internas mediante `assert`.
+
+El objetivo principal es comprender cómo podemos obtener información sobre lo que sucede durante la ejecución de una aplicación, tanto cuando funciona correctamente como cuando se produce algún problema.
+
+Partiremos de un programa sencillo y lo iremos modificando durante la clase.
+
+## 2. Los cinco niveles de logging
+
+El módulo `logging` de Python permite registrar mensajes que describen lo que ocurre durante la ejecución de un programa.
+
+Estos mensajes se clasifican según su importancia.
+
+| Nivel | Valor | Utilidad |
+|---|---:|---|
+| `DEBUG` | 10 | Información detallada para depurar el programa. |
+| `INFO` | 20 | Información sobre operaciones realizadas correctamente. |
+| `WARNING` | 30 | Situaciones que requieren atención, aunque el programa puede continuar. |
+| `ERROR` | 40 | Operaciones que han fallado. |
+| `CRITICAL` | 50 | Problemas graves que pueden impedir el funcionamiento de la aplicación. |
+
+En nuestra aplicación utilizaremos estos niveles de la siguiente manera:
+
+- `DEBUG`: registrar los datos de una operación antes de realizarla.
+- `INFO`: registrar ventas, reposiciones y consultas realizadas.
+- `WARNING`: avisar cuando quedan pocas unidades en el inventario.
+- `ERROR`: registrar una venta rechazada por falta de stock.
+- `CRITICAL`: detectar un inventario inicial inválido que impide iniciar la aplicación.
+
+**Importante:** cuando configuramos un nivel de logging, se registran los mensajes de ese nivel y de todos los niveles superiores.
+
+Por ejemplo, si configuramos `WARNING`, se registrarán los mensajes `WARNING`, `ERROR` y `CRITICAL`, pero no los mensajes `DEBUG` ni `INFO`.
+
+---
+
+## 3. Código inicial de la aplicación
+
+Crea un archivo llamado `tienda.py` y copia el siguiente código.
+
+El programa contiene las funciones necesarias para gestionar el inventario, pero todavía tenemos que completar el bucle del menú y configurar el sistema de registros.
+
+```python
+import logging
+
+
+STOCK_MINIMO: int = 3
+
+
+def mostrar_menu() -> None:
+    """Muestra las opciones disponibles."""
+    print("\n--- GESTIÓN DE STOCK ---")
+    print("1. Vender unidades")
+    print("2. Reponer unidades")
+    print("3. Consultar stock")
+    print("0. Salir")
+
+
+def pedir_opcion() -> str:
+    """Solicita una opción del menú."""
+    return input("Selecciona una opción: ").strip()
+
+
+def comprobar_stock(stock: int) -> None:
+    """Comprueba una condición interna del inventario."""
+    assert stock >= 0, "El stock no puede ser negativo"
+
+
+def vender(stock: int, cantidad: int) -> int:
+    """Realiza una venta y devuelve el stock actualizado."""
+    logging.debug(
+        "Venta solicitada: stock=%d, cantidad=%d",
+        stock, cantidad
+    )
+
+    if cantidad <= 0:
+        raise ValueError("La cantidad debe ser positiva")
+
+    if cantidad > stock:
+        logging.error(
+            "Stock insuficiente: disponibles=%d, solicitadas=%d",
+            stock, cantidad
+        )
+        raise ValueError("No hay suficientes unidades")
+
+    stock -= cantidad
+    comprobar_stock(stock)
+
+    logging.info("Venta realizada: %d unidades", cantidad)
+
+    if stock <= STOCK_MINIMO:
+        logging.warning("Stock bajo: quedan %d unidades", stock)
+
+    return stock
+
+
+def reponer(stock: int, cantidad: int) -> int:
+    """Repone unidades y devuelve el stock actualizado."""
+    logging.debug(
+        "Reposición solicitada: stock=%d, cantidad=%d",
+        stock, cantidad
+    )
+
+    if cantidad <= 0:
+        raise ValueError("La cantidad debe ser positiva")
+
+    stock += cantidad
+    comprobar_stock(stock)
+
+    logging.info("Reposición realizada: %d unidades", cantidad)
+
+    return stock
+
+
+def procesar_opcion(opcion: str, stock: int) -> int:
+    """Procesa una opción del menú y devuelve el stock actualizado."""
+    if opcion == "1":
+        cantidad: int = int(input("Unidades a vender: "))
+        stock = vender(stock, cantidad)
+
+    elif opcion == "2":
+        cantidad: int = int(input("Unidades a reponer: "))
+        stock = reponer(stock, cantidad)
+
+    elif opcion == "3":
+        print(f"Stock disponible: {stock}")
+        logging.info("Consulta del inventario")
+
+    else:
+        print("Opción no válida")
+
+    return stock
+
+
+def main() -> None:
+    """Ejecuta la aplicación de gestión de stock."""
+    stock: int = 10
+
+    # TODO: Configurar logging.
+
+    # Comprobar el inventario inicial.
+    if stock < 0:
+        logging.critical("Inventario inicial inválido: %d", stock)
+        raise ValueError("No se puede iniciar la tienda")
+
+    # TODO: Construir el bucle del menú.
+    # Mostrar menú y solicitar una opción.
+    # Finalizar cuando la opción sea "0".
+    # Procesar las demás opciones.
+    # Capturar las excepciones ValueError.
+
+    print("Stock final:", stock)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### 3.1. Construcción del bucle principal
+
+Vamos a completar juntos la función `main()`.
+
+El bucle debe:
+
+1. Mostrar el menú mediante `mostrar_menu()`.
+2. Solicitar la opción mediante `pedir_opcion()`.
+3. Finalizar cuando se seleccione `"0"`.
+4. Ejecutar `procesar_opcion()` para las demás opciones.
+5. Actualizar el stock con el valor devuelto por la función.
+6. Capturar las excepciones `ValueError` y mostrar un mensaje al usuario sin finalizar la aplicación.
+
+Para ello utilizaremos un bucle `while`, una estructura `if`, y un bloque `try-except`.
+
+Una vez completado, ejecuta el programa y prueba ventas, reposiciones, consultas, cantidades incorrectas y opciones de menú no válidas.
+
+---
+
+## 4. Primera configuración: logging básico en la terminal
+
+Añade la siguiente configuración al comienzo de `main()`, antes de registrar cualquier mensaje:
+
+```python
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(levelname)s - %(message)s"
+)
+```
+
+Ejecuta nuevamente el programa:
+
+```bash
+python tienda.py
+```
+
+Observa los mensajes que aparecen durante las operaciones.
+
+### 4.1. ¿Qué significa level?
+
+El parámetro `level` establece el nivel mínimo de los mensajes que se registrarán.
+
+Por ejemplo:
+
+```python
+level=logging.DEBUG
+```
+
+Permite registrar mensajes de los cinco niveles.
+
+En cambio:
+
+```python
+level=logging.WARNING
+```
+
+Permite registrar únicamente mensajes `WARNING`, `ERROR` y `CRITICAL`.
+
+Cambia el nivel y ejecuta nuevamente el programa para comprobar las diferencias.
+
+### 4.2. ¿Qué significa format?
+
+El parámetro `format` establece cómo se presenta cada mensaje.
+
+En nuestro ejemplo:
+
+```python
+format="%(levelname)s - %(message)s"
+```
+
+Se utilizan dos campos:
+
+- `%(levelname)s`: nombre del nivel del mensaje.
+- `%(message)s`: texto del mensaje.
+
+Por ejemplo:
+
+```python
+logging.warning("Quedan pocas unidades")
+```
+
+Produce:
+
+```text
+WARNING - Quedan pocas unidades
+```
+
+### 4.3. ¿Por qué se utiliza %(levelname)s?
+
+Esta sintaxis procede del formato tradicional de cadenas de Python.
+
+En la expresión `%(levelname)s`:
+
+- `%` introduce un marcador de sustitución.
+- `(levelname)` identifica el campo cuyo valor queremos mostrar.
+- `s` indica que el valor se representará como una cadena de texto.
+
+Los paréntesis permiten identificar el nombre del campo. No son una llamada a una función.
+
+Podemos utilizar un único campo:
+
+```python
+format="%(levelname)s"
+```
+
+En ese caso aparecerá únicamente el nivel:
+
+```text
+WARNING
+```
+
+También podemos combinar varios campos:
+
+```python
+format="%(levelname)s - %(message)s"
+```
+
+No es necesario utilizar todos los campos disponibles, únicamente aquellos que nos interesen.
+
+### 4.4. Campos habituales de logging
+
+| Campo | Información |
+|---|---|
+| `%(levelname)s` | Nombre del nivel del mensaje. |
+| `%(message)s` | Texto del mensaje. |
+| `%(asctime)s` | Fecha y hora del registro. |
+| `%(name)s` | Nombre del logger. |
+| `%(filename)s` | Nombre del archivo Python. |
+| `%(funcName)s` | Nombre de la función. |
+| `%(lineno)d` | Número de línea desde la que se registra el mensaje. |
+
+Observa que `%(lineno)d` termina en `d`, porque representa un número entero.
+
+Prueba ahora este formato:
+
+```python
+format="%(asctime)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
+```
+
+Ejecuta el programa y observa la información adicional que aparece en cada registro.
+
+### 4.5. ¿Dónde se muestran los mensajes?
+
+Por defecto, `logging.basicConfig()` utiliza la **salida estándar de errores**, `sys.stderr`.
+
+Esto no significa que todos los mensajes sean errores. También se envían por esta salida los mensajes `DEBUG` e `INFO`.
+
+En cambio, `print()` utiliza normalmente la salida estándar, `sys.stdout`.
+
+Podemos comprobarlo ejecutando:
+
+```bash
+python tienda.py > salida.txt 2> errores.txt
+```
+
+El archivo `salida.txt` contendrá los mensajes de `print()` y `errores.txt` contendrá los mensajes de logging.
+
+---
+
+## 5. Segunda configuración: guardar los registros en un archivo
+
+En una aplicación real puede resultar útil conservar los registros para consultarlos posteriormente.
+
+Sustituye la configuración anterior por:
+
+```python
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    filename="tienda.log",
+    filemode="w",
+    encoding="utf-8"
+)
+```
+
+Ejecuta nuevamente el programa.
+
+Observa que los mensajes de logging ya no aparecen en la terminal, sino en el archivo `tienda.log`.
+
+Los mensajes generados mediante `print()` continúan apareciendo en pantalla.
+
+### 5.1. Parámetros nuevos
+
+**`filename`**
+
+Indica el archivo donde se almacenarán los registros.
+
+**`filemode`**
+
+Establece cómo se abre el archivo:
+
+- `"w"`: sobrescribe el contenido anterior.
+- `"a"`: añade los nuevos registros al final del archivo.
+
+**`encoding`**
+
+Establece la codificación utilizada para guardar el texto.
+
+En este caso utilizamos UTF-8.
+
+### 5.2. ¿Es lo mismo que redirigir la salida de errores?
+
+Anteriormente utilizamos:
+
+```bash
+python tienda.py 2> errores.txt
+```
+
+Con esta instrucción, el sistema operativo redirige toda la salida estándar de errores a un archivo.
+
+En cambio, cuando utilizamos `filename` en `logging`, es la propia aplicación Python la que decide dónde almacenar sus registros.
+
+La diferencia es importante:
+
+- La redirección `2>` captura toda la salida estándar de errores del proceso, incluidos posibles mensajes de excepciones no capturadas.
+- La configuración de logging permite controlar el formato, los niveles y el destino de los registros.
+- Mediante diferentes handlers podremos enviar distintos niveles de mensajes a diferentes destinos.
+
+Cambia `filemode="w"` por `filemode="a"` y ejecuta dos veces el programa para observar la diferencia.
+
+---
+
+## 6. Tercera configuración: registrar en archivo y terminal
+
+Ahora queremos conseguir lo siguiente:
+
+- Registrar todos los mensajes desde `DEBUG` en el archivo `tienda.log`.
+- Mostrar únicamente los mensajes desde `ERROR` en la terminal.
+
+Para ello utilizaremos dos **handlers**, uno para cada destino.
+
+Un handler es un objeto que se encarga de enviar los mensajes de logging a un destino determinado.
+
+Cada handler puede tener su propio nivel y formato.
+
+### 6.1. Configuración con dos handlers
+
+Añade la importación de `sys` al comienzo del archivo:
+
+```python
+import sys
+```
+
+Sustituye la configuración anterior de `logging.basicConfig()` por:
+
+```python
+formato = logging.Formatter(
+    "%(asctime)s - %(levelname)s - %(message)s"
+)
+
+# Handler para el archivo
+archivo = logging.FileHandler(
+    "tienda.log",
+    mode="a",
+    encoding="utf-8"
+)
+archivo.setLevel(logging.DEBUG)
+archivo.setFormatter(formato)
+
+# Handler para la terminal
+consola = logging.StreamHandler(sys.stderr)
+consola.setLevel(logging.ERROR)
+consola.setFormatter(formato)
+
+# Logger principal
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+logger.addHandler(archivo)
+logger.addHandler(consola)
+```
+
+### 6.2. ¿Cómo funciona?
+
+**Logger principal**
+
+```python
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+```
+
+Obtenemos el logger principal y establecemos que procese mensajes desde `DEBUG`.
+
+**Handler del archivo**
+
+```python
+archivo.setLevel(logging.DEBUG)
+```
+
+Permite guardar todos los mensajes desde `DEBUG` en `tienda.log`.
+
+**Handler de la terminal**
+
+```python
+consola.setLevel(logging.ERROR)
+```
+
+Permite mostrar únicamente mensajes `ERROR` y `CRITICAL` en la terminal.
+
+**Registro de los handlers**
+
+```python
+logger.addHandler(archivo)
+logger.addHandler(consola)
+```
+
+Asociamos ambos destinos al logger principal.
+
+### 6.3. Comprobación
+
+Ejecuta el programa y realiza distintas operaciones.
+
+Comprueba que:
+
+- Las ventas correctas generan registros `INFO` en el archivo.
+- Las operaciones muestran información `DEBUG` en el archivo.
+- Cuando quedan pocas unidades, aparece un registro `WARNING` en el archivo.
+- Si intentas vender más unidades de las disponibles, aparece un mensaje `ERROR` tanto en el archivo como en la terminal.
+
+El programa seguirá mostrando los mensajes de `print()` en pantalla, independientemente del nivel de logging.
+
+---
+
+## 7. assert y gestión de excepciones
+
+En nuestro programa hemos utilizado tres mecanismos diferentes: `if`, `raise` y `assert`.
+
+También hemos utilizado `try-except` para capturar determinadas excepciones.
+
+### 7.1. Validación mediante if y raise
+
+En la función `vender()` encontramos:
+
+```python
+if cantidad <= 0:
+    raise ValueError("La cantidad debe ser positiva")
+```
+
+Esta condición comprueba que el usuario haya introducido una cantidad válida.
+
+Si no se cumple, se lanza una excepción `ValueError`.
+
+En `main()`, el bloque `try-except` captura esa excepción para evitar que la aplicación termine inesperadamente.
+
+### 7.2. Comprobación mediante assert
+
+También tenemos:
+
+```python
+def comprobar_stock(stock: int) -> None:
+    assert stock >= 0, "El stock no puede ser negativo"
+```
+
+La instrucción `assert` comprueba que una condición sea verdadera.
+
+Si la condición es falsa, Python lanza una excepción `AssertionError`.
+
+En este caso, estamos comprobando una condición interna del programa: después de una venta correctamente validada, el stock nunca debería ser negativo.
+
+Por tanto, una aserción fallida puede ayudarnos a detectar un error de programación durante el desarrollo.
+
+### 7.3. Provocar un error de programación
+
+Para observar cómo funciona `assert`, vamos a introducir temporalmente un error.
+
+En la función `vender()`, sustituye:
+
+```python
+stock -= cantidad
+```
+
+Por:
+
+```python
+stock -= cantidad * 2
+```
+
+Ejecuta el programa e intenta vender 6 unidades cuando el stock inicial es 10.
+
+La comprobación previa permitirá la operación porque hay suficientes unidades para vender 6. Sin embargo, debido al error introducido, el programa intentará descontar 12 unidades.
+
+La función `comprobar_stock()` detectará que el resultado es negativo y lanzará una excepción `AssertionError`.
+
+Observa el mensaje y la traza del error.
+
+**¿Por qué el bloque `except ValueError` de `main()` no captura esta excepción?**
+
+Una vez realizada la comprobación, restaura la instrucción original:
+
+```python
+stock -= cantidad
+```
+
+### 7.4. Diferencias entre los mecanismos utilizados
+
+| Mecanismo | Finalidad |
+|---|---|
+| `if` | Controlar el flujo de ejecución según una condición. |
+| `raise` | Lanzar explícitamente una excepción. |
+| `try-except` | Capturar y gestionar excepciones. |
+| `assert` | Comprobar condiciones que deberían cumplirse siempre durante el desarrollo. |
+
+**Importante:** las aserciones pueden desactivarse al ejecutar Python con la opción `-O`. Por este motivo, no deben utilizarse como sustituto de las validaciones necesarias para el funcionamiento correcto de una aplicación.
+
+---
+
+## 8. Conclusiones
+
+Durante esta práctica hemos trabajado con una aplicación realista y hemos observado cómo cambia su comportamiento al modificar la configuración de logging.
+
+Hemos comprobado que:
+
+- `logging` permite registrar información sobre la ejecución del programa sin depender exclusivamente de `print()`.
+- Los cinco niveles permiten clasificar los mensajes según su importancia.
+- `basicConfig()` proporciona una configuración sencilla para registrar mensajes en la terminal o en un archivo.
+- Los handlers permiten utilizar varios destinos con diferentes niveles.
+- `if` y `raise` permiten validar operaciones y comunicar errores.
+- `try-except` permite gestionar las excepciones previstas.
+- `assert` ayuda a detectar errores de programación cuando se incumple una condición interna que debería ser verdadera.
+
+El objetivo es comprender cómo estas herramientas facilitan el desarrollo, la depuración y el mantenimiento de aplicaciones Python.
