@@ -94,7 +94,7 @@ El bucle debe:
 1. Mostrar el menú mediante `mostrar_menu()`.
 2. Solicitar la opción mediante `pedir_opcion()`.
 3. Finalizar cuando se seleccione `"0"`.
-4. Ejecutar `procesar_opcion()` para las demás opciones.
+4. Ejecutar `procesar_opcion()` para las opciones válidas (`"1"`, `"2"` y `"3"`), mostrando un mensaje de error para cualquier otra opción distinta de `"0"`.
 5. Actualizar el stock con el valor devuelto por la función.
 6. Capturar las excepciones `ValueError` y mostrar un mensaje al usuario sin finalizar la aplicación.
 
@@ -118,7 +118,7 @@ logging.basicConfig(
 Ejecuta nuevamente el programa:
 
 ```bash
-python tienda.py
+python ./src/tienda.py
 ```
 
 Observa los mensajes que aparecen durante las operaciones.
@@ -228,19 +228,13 @@ Ejecuta el programa y observa la información adicional que aparece en cada regi
 
 ### 5.5. ¿Dónde se muestran los mensajes?
 
-Por defecto, `logging.basicConfig()` utiliza la **salida estándar de errores**, `sys.stderr`.
+Por defecto, `logging.basicConfig()` envía los mensajes a la **salida estándar de errores** (`sys.stderr`), mientras que `print()` utiliza la **salida estándar** (`sys.stdout`).
 
-Esto no significa que todos los mensajes sean errores. También se envían por esta salida los mensajes `DEBUG` e `INFO`.
+Aunque son dos canales diferentes, ambos muestran sus mensajes en la misma terminal.
 
-En cambio, `print()` utiliza normalmente la salida estándar, `sys.stdout`.
+Esto no significa que todos los mensajes de `logging` sean errores: también se muestran los niveles `DEBUG`, `INFO` y `WARNING`, según la configuración establecida.
 
-Podemos comprobarlo ejecutando:
-
-```bash
-python tienda.py > salida.txt 2> errores.txt
-```
-
-El archivo `salida.txt` contendrá los mensajes de `print()` y `errores.txt` contendrá los mensajes de logging.
+A continuación, vamos a modificar la configuración de `logging` para que los mensajes se guarden en un **archivo de registro**, en lugar de mostrarse en la terminal.
 
 ---
 
@@ -285,25 +279,17 @@ Establece la codificación utilizada para guardar el texto.
 
 En este caso utilizamos UTF-8.
 
-### 6.2. ¿Es lo mismo que redirigir la salida de errores?
+### 6.2. ¿Qué ventajas tiene guardar los registros en un archivo?
 
-Anteriormente utilizamos:
+Hasta ahora, los mensajes de `logging` se mostraban en la terminal junto con la salida habitual del programa.
 
-```bash
-python tienda.py 2> errores.txt
-```
+Al utilizar el parámetro `filename`, los mensajes se guardan directamente en un archivo de registro, lo que permite:
 
-Con esta instrucción, el sistema operativo redirige toda la salida estándar de errores a un archivo.
+- **Conservar los registros** para consultarlos posteriormente.
+- **Mantener la terminal más limpia**, mostrando únicamente los mensajes destinados al usuario.
+- **Analizar errores y operaciones** incluso después de finalizar el programa.
 
-En cambio, cuando utilizamos `filename` en `logging`, es la propia aplicación Python la que decide dónde almacenar sus registros.
-
-La diferencia es importante:
-
-- La redirección `2>` captura toda la salida estándar de errores del proceso, incluidos posibles mensajes de excepciones no capturadas.
-- La configuración de logging permite controlar el formato, los niveles y el destino de los registros.
-- Mediante diferentes handlers podremos enviar distintos niveles de mensajes a diferentes destinos.
-
-Cambia `filemode="w"` por `filemode="a"` y ejecuta dos veces el programa para observar la diferencia.
+**Comprobación:** cambia `filemode="w"` por `filemode="a"` y ejecuta el programa dos veces. Abre `tienda.log` y comprueba que se conservan los registros de ambas ejecuciones.
 
 ---
 
