@@ -447,21 +447,54 @@ Por:
 stock -= cantidad * 2
 ```
 
-Ejecuta el programa e intenta vender 6 unidades cuando el stock inicial es 10.
+Ejecuta el programa e intenta vender **6 unidades** cuando el stock inicial es **10**.
 
 La comprobación previa permitirá la operación porque hay suficientes unidades para vender 6. Sin embargo, debido al error introducido, el programa intentará descontar 12 unidades.
 
 La función `comprobar_stock()` detectará que el resultado es negativo y lanzará una excepción `AssertionError`.
 
-Observa el mensaje y la traza del error.
+**¿Qué ocurre durante la ejecución?**
 
-**¿Por qué el bloque `except ValueError` de `main()` no captura esta excepción?**
+El programa se detiene y Python muestra una traza de error (*traceback*) similar a esta:
+
+```text
+Traceback (most recent call last):
+  ...
+  File "tienda.py", line ..., in comprobar_stock
+    assert stock >= 0, "El stock no puede ser negativo"
+AssertionError: El stock no puede ser negativo
+```
+
+La traza nos permite identificar dónde se ha producido el problema:
+
+- **`AssertionError`**: indica que una condición comprobada mediante `assert` no se ha cumplido.
+- **`El stock no puede ser negativo`**: es el mensaje que hemos definido en la aserción.
+- **`File`, `line` e `in comprobar_stock`**: permiten localizar el archivo, la línea y la función donde se ha detectado el error.
+
+**¿Por qué no se ha capturado la excepción?**
+
+En `main()` tenemos un bloque:
+
+```python
+except ValueError as e:
+    print(f"Error: {e}")
+```
+
+Este bloque captura únicamente excepciones de tipo `ValueError` (o sus subclases).
+
+Sin embargo, `assert` ha lanzado una excepción de tipo `AssertionError`, por lo que **no es capturada y el programa termina mostrando el traceback**.
+
+Esto es precisamente lo que buscamos: detectar un posible error de programación, en lugar de tratarlo como una entrada incorrecta del usuario.
+
+**Restaurar el código**
 
 Una vez realizada la comprobación, restaura la instrucción original:
 
 ```python
 stock -= cantidad
 ```
+
+Ejecuta nuevamente el programa y comprueba que ahora la venta se realiza correctamente y el stock queda en **4 unidades**.
 
 ### 8.4. Diferencias entre los mecanismos utilizados
 
